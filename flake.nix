@@ -1,5 +1,5 @@
 {
-	description = "A template repository for Minecraft plugins";
+	description = "A Minecraft plugin that adds TNT which explodes instantly, inspired by Bad Piggies";
 
 	inputs = {
 		nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
