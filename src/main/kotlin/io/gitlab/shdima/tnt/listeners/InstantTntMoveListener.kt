@@ -9,35 +9,33 @@ import org.bukkit.event.block.BlockPistonRetractEvent
 class InstantTntMoveListener(private val plugin: InstantTnt) : Listener {
     @EventHandler
     private fun onPistonPush(event: BlockPistonExtendEvent) {
-        val piston = event.block
         val direction = event.direction
-
-        val pushed = piston.getRelative(direction)
         val manager = plugin.instantTntManager
 
-        if (!manager.isInstantTnt(pushed)) return
+        event.blocks.forEach {
+            if (!manager.isInstantTnt(it)) return@forEach
 
-        val newBlock = pushed.getRelative(direction)
+            val newBlock = it.getRelative(direction)
 
-        manager.removeInstantTnt(pushed)
-        manager.addInstantTnt(newBlock)
+            manager.removeInstantTnt(it)
+            manager.addInstantTnt(newBlock)
+        }
     }
 
     @EventHandler
     private fun onPistonPull(event: BlockPistonRetractEvent) {
         if (!event.isSticky) return
 
-        val piston = event.block
-        val direction = event.direction.oppositeFace
-
-        val newBlock = piston.getRelative(direction)
+        val direction = event.direction
         val manager = plugin.instantTntManager
 
-        val pulled = newBlock.getRelative(direction)
+        event.blocks.forEach {
+            if (!manager.isInstantTnt(it)) return@forEach
 
-        if (!manager.isInstantTnt(pulled)) return
+            val newBlock = it.getRelative(direction)
 
-        manager.removeInstantTnt(pulled)
-        manager.addInstantTnt(newBlock)
+            manager.removeInstantTnt(it)
+            manager.addInstantTnt(newBlock)
+        }
     }
 }
