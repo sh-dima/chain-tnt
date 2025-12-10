@@ -15,7 +15,7 @@ Disclaimer
 * [The author][author] is the publisher and owner.
 * NOT AN OFFICIAL [MINECRAFT][minecraft] PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH [MOJANG][mojang] OR [MICROSOFT][microsoft].
 
-[author]: https://gitlab.com/shdima (The author of this project)
+[author]: https://gitlab.com/-/u/24902750 (The author of this project)
 [email]: mailto:dima.o.sh@proton.me (E-mail the author of this project)
 
 [minecraft]: https://www.minecraft.net/ (Minecraft)
