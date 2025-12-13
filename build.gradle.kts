@@ -134,5 +134,5 @@ bukkit {
         "Esoteric Enderman"
     )
 
-    website = "https://gitlab.com/shdima/instant-tnt"
+    website = "https://gitlab.com/-/p/75772128"
 }

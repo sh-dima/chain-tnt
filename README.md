@@ -6,18 +6,24 @@ A Minecraft plugin that adds TNT which explodes instantly, inspired by Bad Piggi
 Links
 -----
 
+* [GitLab][gitlab]
+* [GitHub][github]
 * [Email][email]
+
+License
+-------
+
+© 2025 [Дима Ш.][author]
+
+[Instant TNT](./) is licensed under the [AGPL 3.0](./LICENSE) only.
 
 Disclaimer
 ----------
 
-* [The author][author] (not [Mojang][mojang] or [Microsoft][microsoft]) is responsible for the product or service.
-* [The author][author] is the publisher and owner.
-* NOT AN OFFICIAL [MINECRAFT][minecraft] PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH [MOJANG][mojang] OR [MICROSOFT][microsoft].
+NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.
+
+[gitlab]: https://gitlab.com/-/p/75772128 (This project on GitLab)
+[github]: https://github.com/sh-dima/instant-tnt (This project on GitHub)
 
 [author]: https://gitlab.com/-/u/24902750 (The author of this project)
 [email]: mailto:dima.o.sh@proton.me (E-mail the author of this project)
-
-[minecraft]: https://www.minecraft.net/ (Minecraft)
-[microsoft]: https://www.microsoft.com/ (Microsoft)
-[mojang]: https://minecraft.wiki/w/Mojang_Studios (Mojang Studios)
