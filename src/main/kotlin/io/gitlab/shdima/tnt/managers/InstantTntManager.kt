@@ -189,6 +189,8 @@ class InstantTntManager(private val plugin: InstantTnt) {
             }
         }
 
+        plugin.logger.info("Set ${toExplode.size} instant TNTs to explode!")
+
         toExplode.forEach {
             val existing = instantTntBlocks[it.key]?.first
 
