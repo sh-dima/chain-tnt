@@ -15,9 +15,6 @@ class InstantTntDetonateListener(private val plugin: InstantTnt) : Listener {
 
         val manager = plugin.instantTntManager
         if (!manager.isInstantTnt(tnt)) return
-        if (manager.blocksToDetonate.contains(tnt.location.toVector())) { // TNT already being exploded
-            event.isCancelled = true; return
-        }
 
         if (manager.isInstantTnt(event.primingBlock)) { // Will be handled by instant TNT manager
             event.isCancelled = true; return
@@ -26,7 +23,10 @@ class InstantTntDetonateListener(private val plugin: InstantTnt) : Listener {
         event.isCancelled = true
 
         val entity = event.primingEntity
-        manager.chainDetonateInstantTnt(tnt, entity)
+        manager.chainDetonateInstantTnt(
+            tnt,
+            entity
+        )
 
         if (entity !is Player) return
 

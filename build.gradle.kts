@@ -92,6 +92,10 @@ tasks {
 
             """.trimIndent())
         }
+
+        downloadPlugins {
+            modrinth("z4HZZnLr", "2.14.2") // FastAsyncWorldEdit
+        }
     }
 
     withType<ShadowJar> {

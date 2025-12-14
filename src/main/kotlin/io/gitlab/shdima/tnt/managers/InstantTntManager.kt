@@ -3,50 +3,62 @@ package io.gitlab.shdima.tnt.managers
 import com.google.gson.Gson
 import com.google.gson.internal.LinkedTreeMap
 import io.gitlab.shdima.tnt.InstantTnt
+import io.gitlab.shdima.tnt.data.BlockLocation
+import io.gitlab.shdima.tnt.util.blockLocation
 import io.gitlab.shdima.tnt.util.center
-import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.entity.Entity
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
-import org.bukkit.util.Vector
 import java.io.*
-import kotlin.math.floor
+import kotlin.math.sqrt
 
 class InstantTntManager(private val plugin: InstantTnt) {
-    var blocksToDetonate = mutableSetOf<Vector>()
-
     private val instantTntDataFile = File(plugin.dataFolder, "data/instant-tnt-blocks.json")
-    private val instantTntBlocks = mutableListOf<Vector>()
+    val instantTntBlocks = mutableMapOf<BlockLocation, Pair<Long, Entity?>?>()
 
     init {
         loadInstantTntData()
+
+        plugin.server.scheduler.runTaskTimer(plugin, { ->
+            instantTntBlocks.toMutableMap().forEach {
+                val pair = it.value ?: return@forEach
+                val time = pair.first - 1
+
+                if (time <= 0L) {
+                    detonateInstantTnt(it.key.block, pair.second)
+                    instantTntBlocks.remove(it.key)
+                } else {
+                    instantTntBlocks[it.key] = Pair(time, pair.second)
+                }
+            }
+        }, 0L, 1L)
     }
 
-    fun addInstantTnt(blockCoordinates: Vector) {
-        instantTntBlocks.add(blockCoordinates)
+    fun addInstantTnt(blockCoordinates: Location) {
+        instantTntBlocks[blockCoordinates.blockLocation] = null
     }
 
     fun addInstantTnt(block: Block) {
-        addInstantTnt(block.location.toVector())
+        addInstantTnt(block.location)
     }
 
-    fun removeInstantTnt(blockCoordinates: Vector) {
-        instantTntBlocks.remove(blockCoordinates)
+    fun removeInstantTnt(blockCoordinates: Location) {
+        instantTntBlocks.remove(blockCoordinates.blockLocation)
     }
 
     fun removeInstantTnt(block: Block) {
-        removeInstantTnt(block.location.toVector())
+        removeInstantTnt(block.location)
     }
 
-    fun isInstantTnt(blockCoordinates: Vector): Boolean {
-        return instantTntBlocks.contains(blockCoordinates)
+    fun isInstantTnt(blockCoordinates: Location): Boolean {
+        return instantTntBlocks.contains(blockCoordinates.blockLocation)
     }
 
     fun isInstantTnt(block: Block?): Boolean {
-        return block?.type == Material.TNT && isInstantTnt(block.location.toVector())
+        return block?.type == Material.TNT && isInstantTnt(block.location)
     }
 
     fun isInstantTnt(itemStack: ItemStack): Boolean {
@@ -143,55 +155,46 @@ class InstantTntManager(private val plugin: InstantTnt) {
         removeInstantTnt(instantTnt)
     }
 
-    private fun chainDetonateInstantTnt(startingTnt: Block): MutableSet<Vector> {
+    fun chainDetonateInstantTnt(startingTnt: Block, entity: Entity?) {
         val radius = plugin.config.spreadRadiusBlocks
         val radiusSquared = radius * radius
 
-        val remaining = instantTntBlocks.toMutableSet()
-        val result = mutableSetOf<Vector>()
-        val queue = ArrayDeque<Vector>()
+        val tickDelayPerBlock = plugin.config.tickDelayPerBlock
 
-        val start = startingTnt.location.toVector()
-        queue.add(start)
-        result.add(start)
-        remaining.remove(start)
+        val toCheck = instantTntBlocks.keys.toMutableSet()
+        val toExplode = mutableMapOf<BlockLocation, Long>()
+        val queue = ArrayDeque<Pair<BlockLocation, Long>>()
+
+        val start = startingTnt.location.blockLocation
+        queue.add(Pair(start, 0))
+        toExplode[start] = 0
+        toCheck.remove(start)
 
         while (queue.isNotEmpty()) {
-            val current = queue.removeFirst()
+            val checking = queue.removeFirst()
 
-            val iterator = remaining.iterator()
-            while (iterator.hasNext()) {
-                val candidate = iterator.next()
-                if (current.distanceSquared(candidate) <= radiusSquared) {
-                    iterator.remove()
-                    result.add(candidate)
-                    queue.add(candidate)
+            val toCheckIterator = toCheck.iterator()
+            while (toCheckIterator.hasNext()) {
+                val candidate = toCheckIterator.next()
+                val distanceSquared = checking.first.location.distanceSquared(candidate.location)
+
+                if (distanceSquared <= radiusSquared) {
+                    val delay = (checking.second + tickDelayPerBlock * sqrt(distanceSquared)).toLong()
+
+                    toExplode[candidate] = delay
+                    queue.add(Pair(candidate, delay))
+
+                    toCheckIterator.remove()
                 }
             }
         }
 
-        return result
-    }
+        toExplode.forEach {
+            val existing = instantTntBlocks[it.key]?.first
 
-    fun chainDetonateInstantTnt(startingTnt: Block, cause: Entity?) {
-        blocksToDetonate = chainDetonateInstantTnt(startingTnt)
-
-        val explosionOrigin = startingTnt.center.toVector()
-        val world = startingTnt.world
-
-        val blocksPerTickDelay = plugin.config.blocksPerTickDelay
-
-        for (explosionLocation in blocksToDetonate) {
-            val distance = explosionOrigin.distance(explosionLocation)
-
-            val tickDelay = if (blocksPerTickDelay == 0.0) 0 else floor(distance / blocksPerTickDelay).toInt()
-
-            Bukkit.getScheduler().runTaskLater(plugin, Runnable {
-                detonateInstantTnt(
-                    world.getBlockAt(Location(world, explosionLocation.x, explosionLocation.y, explosionLocation.z)),
-                    cause
-                )
-            }, tickDelay.toLong())
+            if (existing == null || existing > it.value) {
+                instantTntBlocks[it.key] = Pair(it.value, entity)
+            }
         }
     }
 
@@ -201,21 +204,23 @@ class InstantTntManager(private val plugin: InstantTnt) {
 
             val gson = Gson()
 
-            val locations = gson.fromJson<List<*>>(
+            val locations = gson.fromJson<List<BlockLocation>>(
                 reader,
                 MutableList::class.java
-            ) as List<LinkedTreeMap<String, Double>>
+            ) as List<LinkedTreeMap<String, Any>>
 
             reader.close()
 
             for (location in locations) {
-                instantTntBlocks.add(
-                    Vector(
-                        location["x"]!!,
-                        location["y"]!!,
-                        location["z"]!!
-                    )
-                )
+                val x = (location["x"] as Double).toInt()
+                val y = (location["y"] as Double).toInt()
+                val z = (location["z"] as Double).toInt()
+
+                val world = location["world"] as String
+
+                instantTntBlocks[
+                    BlockLocation(x,y,z, world)
+                ] = null
             }
         } catch (exception: IOException) {
             throw RuntimeException(exception)
@@ -228,7 +233,7 @@ class InstantTntManager(private val plugin: InstantTnt) {
 
             val gson = Gson()
 
-            gson.toJson(instantTntBlocks, writer)
+            gson.toJson(instantTntBlocks.keys, writer)
 
             writer.flush()
             writer.close()

@@ -24,10 +24,12 @@ class InstantTntCollideListener(private val plugin: InstantTnt) : Listener {
         val instantTnts = touchedBlocks.filter { instantTntManager.isInstantTnt(it) && instantTntManager.shouldInstantTntDetonate(it, entity, event.to) } as MutableList<Block>
         if (instantTnts.isEmpty()) return
 
-        instantTntManager.chainDetonateInstantTnt(instantTnts.removeFirst(), entity)
-        instantTnts.forEach {
-            if (instantTntManager.blocksToDetonate.contains(it.location.toVector())) return@forEach
+        instantTntManager.chainDetonateInstantTnt(
+            instantTnts.removeFirst(),
+            entity
+        )
 
+        instantTnts.forEach {
             instantTntManager.detonateInstantTnt(it, entity)
         }
     }

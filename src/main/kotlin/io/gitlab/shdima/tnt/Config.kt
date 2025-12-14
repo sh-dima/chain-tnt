@@ -8,8 +8,8 @@ class Config {
     var minimumCollisionDetonationSpeed = 0.75
 
     var power = 2.0
-    var breaksBlocks = false
+    var breaksBlocks = true
     var setsFire = false
     var spreadRadiusBlocks = 8.0
-    var blocksPerTickDelay = 0.0
+    var tickDelayPerBlock = 2L
 }
