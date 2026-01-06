@@ -27,5 +27,5 @@ NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR 
 [gitlab]: https://gitlab.com/-/p/75772128 (This project on GitLab)
 [github]: https://github.com/sh-dima/instant-tnt (This project on GitHub)
 
-[author]: https://gitlab.com/-/u/24902750 (The author of this project)
+[author]: https://shdima.gitlab.io/ (The author of this project)
 [email]: mailto:dima.o.sh@proton.me (E-mail the author of this project)
