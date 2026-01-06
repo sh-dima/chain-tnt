@@ -1,5 +1,5 @@
 {
-	description = "A Minecraft plugin that adds TNT which explodes instantly, inspired by Bad Piggies";
+	description = "A Minecraft plugin that adds TNT which explodes instantly and in a chain, inspired by Bad Piggies.";
 
 	inputs = {
 		nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
